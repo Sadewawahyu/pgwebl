@@ -100,7 +100,12 @@ class PointController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $data = [
+            'title' => 'Edit Point',
+            'id' => $id,
+        ];
+
+        return view('edit-point', $data);
     }
 
     /**
@@ -116,6 +121,18 @@ class PointController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $imagefile = $this->point->find($id)->image;
+
+        if (!$this->point->destroy( $id)) {
+            return redirect()->route('map')->with('error', 'Point failed to deleted');
+        }
+
+        // Delete image file
+        if ($imagefile != null) {
+            if (file_exists('storage/images/' . $imagefile)) {
+                unlink('storage/images/' . $imagefile);
+            }
+        }
+        return redirect()->route('map')->with('success', 'Point has been deleted');
     }
 }

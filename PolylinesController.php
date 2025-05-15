@@ -97,7 +97,12 @@ class PolylinesController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $data = [
+            'title' => 'Edit Polyline',
+            'id' => $id,
+        ];
+
+        return view('edit-polyline', $data);
     }
 
     /**
@@ -113,6 +118,18 @@ class PolylinesController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $imagefile = $this->polyline->find($id)->image;
+
+        if (!$this->polyline->destroy( $id)) {
+            return redirect()->route('map')->with('error', 'Polyline failed to deleted');
+        }
+
+        // Delete image file
+        if ($imagefile != null) {
+            if (file_exists('storage/images/' . $imagefile)) {
+                unlink('storage/images/' . $imagefile);
+            }
+        }
+        return redirect()->route('map')->with('success', 'Polyline has been deleted');
     }
 }

@@ -9,7 +9,7 @@ class PolygonsController extends Controller
 {
     public function __construct()
     {
-        $this->polygon = new PolygonsModel();
+        $this->polygons = new PolygonsModel();
     }
     /**
      * Display a listing of the resource.
@@ -60,7 +60,7 @@ class PolygonsController extends Controller
         // Get Image File
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $name_image = time() . "_polygons." . strtolower($image->getClientOriginalExtension());
+            $name_image = time() . "_polygon." . strtolower($image->getClientOriginalExtension());
             $image->move('storage/images', $name_image);
           } else {
             $name_image = null;
@@ -70,10 +70,11 @@ class PolygonsController extends Controller
             'geom' => $request->geom_polygon,
             'name' => $request->name,
             'description' => $request->description,
+            'image' => $name_image,
         ];
 
         // Create data
-        if (!$this->polygon->create($data)) {
+        if (!$this->polygons->create($data)) {
             return redirect()->route('map')->with('error', 'Polygons failed to added');
         }
 
@@ -94,7 +95,12 @@ class PolygonsController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $data = [
+            'title' => 'Edit Polygon',
+            'id' => $id,
+        ];
+
+        return view('edit-polygon', $data);
     }
 
     /**
@@ -110,6 +116,18 @@ class PolygonsController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $imagefile = $this->polygons->find($id)->image;
+
+        if (!$this->polygons->destroy( $id)) {
+            return redirect()->route('map')->with('error', 'Polygons failed to deleted');
+        }
+
+        // Delete image file
+        if ($imagefile != null) {
+            if (file_exists('storage/images/' . $imagefile)) {
+                unlink('storage/images/' . $imagefile);
+            }
+        }
+        return redirect()->route('map')->with('success', 'Polygons has been deleted');
     }
 }
